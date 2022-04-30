@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const postsRouter = require('./routes/post');
+// const indexEouter = require('..')
 require('./connections/index')
 const app = express();
 app.use(cors());
@@ -13,6 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/posts', postsRouter);
+
 app.use((req,res)=>{
   res.status(404).json({
     status:false,

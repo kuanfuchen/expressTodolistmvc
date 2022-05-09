@@ -3,7 +3,7 @@ const handleError = require('../services/handleError');
 const Post = require('../models/postsmodel');
 
 const postsControllers = {
-  getPostsData: async(res)=>{
+  getPostsData: async(res) => {
     const data = await Post.find();
     handleSuccess(res,data);
   },
@@ -17,33 +17,46 @@ const postsControllers = {
         handleError(res,'屬性未填寫完')
       }
     }catch(err){
+      console.log(err, 'create err')
       handleError(res,'很抱歉，格式錯誤了')
     }
   },
-  deleteIDPostData:async(res,id)=>{
-    const info = await Post.find({_id:id});
-    if(info.length !== 0){
-      await Post.findByIdAndDelete({_id:id})
-      handleSuccess(res,'資料已刪除')
-    }else{
-      handleError(res,'id並不存在')
-    }
+  deleteIDPostData:async(req, res)=>{
+      try{
+        console.log(req.originalUrl)
+        const id = req.params.id ;
+        const handledeleteinfo = await Post.findByIdAndDelete(id)
+        if(handledeleteinfo === null){
+          handleError(res,'錯誤的id，請重新輸入')
+        }else{
+          handleSuccess(res,'資料已刪除')
+          
+        }
+      }catch(err){
+        handleError(res,'id並不存在')
+      }
   },
-  deleteAllPostData:async(res)=>{
-    await Post.deleteMany({});
-    handleSuccess(res,[]);
+  deleteAllPostData:async(req,res)=>{
+    if(req.originalUrl==='/posts'){
+      await Post.deleteMany({});
+      handleSuccess(res,[]);
+    }else{
+      handleError(res,'請補上id')
+    }
   },
   patchPostsData:async(req,res,id)=>{
     try{
       const data = req.body;
       if(id && data.name && data.content){
-        const modifiedData = await Post.findByIdAndUpdate(id,data,{new:true});
+        const modifiedData = await Post.findByIdAndUpdate(id,data,
+          {new:true, runValidators: true});
         handleSuccess(res, modifiedData)
       }else{
         handleError(res,'沒有此id或資料有缺少')
       }
     }catch(err){
-      handleError(res,'格式錯誤')
+      console.log(err,'patch err')
+      handleError(res,err.message)
     }
   }
 }
